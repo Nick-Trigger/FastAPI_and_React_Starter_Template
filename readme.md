@@ -10,7 +10,7 @@ A batteries-included starter template for full-stack web apps. FastAPI backend, 
 - **Frontend** — React 19 + TypeScript + [React Compiler](https://react.dev/learn/react-compiler), built with Vite
 - **Database** — PostgreSQL 16 (Docker)
 - **Wired up out of the box** — CORS configured, Alembic reads the DB URL from `.env`, settings load via `pydantic-settings`, OpenAPI docs auto-generated
-- **One-command dev startup** — `dev.ps1` spins up Postgres and opens backend + frontend in Windows Terminal tabs
+- **One-command dev workflow** — `dev.ps1` spins up Postgres and opens backend + frontend in Windows Terminal tabs; `reset_db.ps1` wipes and rebuilds the database in one shot
 - **Sensible `.gitignore`** covering Python, Node, Postgres, and editor/OS junk
 
 ## Using this template
@@ -85,10 +85,10 @@ Other modes:
 
 ```powershell
 .\dev.ps1 -DbOnly    # just Postgres (useful when running backend tests)
-.\dev.ps1 -Stop      # shut down Postgres
+.\dev.ps1 -Stop      # shut down everything: Postgres AND the opened terminals
 ```
 
-Stop the backend/frontend with `Ctrl+C` in their respective tabs.
+`Ctrl+C` in a backend/frontend tab also works if you want to stop just one service. `-Stop` is the full teardown.
 
 ## Project structure
 
@@ -113,6 +113,7 @@ Stop the backend/frontend with `Ctrl+C` in their respective tabs.
 │   └── vite.config.ts
 ├── docker-compose.yml        # Postgres
 ├── dev.ps1                   # one-command dev startup
+├── reset_db.ps1              # wipe + re-init the local database
 ├── .env.example
 └── README.md
 ```
@@ -152,12 +153,14 @@ uv run pytest
 ```
 
 **Reset the database**
+
+Wipes the Postgres volume and re-applies all migrations from scratch:
 ```powershell
-docker compose down -v       # -v also deletes the volume
-.\dev.ps1 -DbOnly
-cd backend
-uv run alembic upgrade head
+.\reset_db.ps1               # leave the stack stopped after reset
+.\reset_db.ps1 -Restart      # reset and immediately bring the stack back up
 ```
+
+Use this whenever the local DB gets into a weird state — bad seed data, half-applied migration, a schema you want to throw away.
 
 ## Renaming the project
 
